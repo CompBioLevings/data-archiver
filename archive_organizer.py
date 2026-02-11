@@ -110,6 +110,20 @@ def propose_archive_directory(researcher: Optional[str],
     Returns:
         Proposed archive directory path
     """
+    
+    # Now use match-case to convert experiment type to one that will be compatible with s3 bucket naming conventions
+    if experiment_type:
+        match experiment_type.lower():
+            case 'rna-seq':
+                experiment_type = 'slattery-rnaseq'
+            case 'chip-seq':
+                experiment_type = 'slattery-chipseq'
+            case 'atac-seq':
+                experiment_type = 'slattery-atacseq'
+            case _:
+                # For any other experiment types, set to None
+                experiment_type = None
+
     components: List[str] = []
     
     if experiment_type:
@@ -234,7 +248,11 @@ def generate_output_table(file_groups: Dict[str, List[str]],
         
         # Write data rows
         for base_fastq_dir, file_list in file_groups.items():
-            archive_dir = final_archive_dirs.get(base_fastq_dir, 'uncategorized')
+            # Skip directories that were not included in final mapping (i.e., marked as 'skip')
+            if base_fastq_dir not in final_archive_dirs:
+                continue
+            
+            archive_dir = final_archive_dirs[base_fastq_dir]
             
             for filepath in sorted(file_list):
                 filename = os.path.basename(filepath)
