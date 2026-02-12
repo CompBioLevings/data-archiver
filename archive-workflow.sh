@@ -1,6 +1,9 @@
 #!/bin/bash -l
 
-# Workflow specification
+# Workflow for archiving new FASTQ files to Tier 2 storage.  This script will be run on a regular basis, manually
+# for now, to: check for new FASTQ files, filter out those that have already been archived, and then sync the new
+# files to UMN Tier 2 storage based on a generated mapping file.  Finally, it will update the master archive mapping
+# file and create a timestamped backup of the mapping and ignore files.
 
 # Set up all configurable variables and filenames
 search_regex='\.fastq\.?((gz)|(bz2)|(xz))?$'
@@ -58,6 +61,6 @@ read -s -p "Enter password to encrypt archive mapping and ignored files: " passw
 7za a -p"$password" "pipeline/data-archiver/data/archiver-db-bkup_${timestamp}.7z" "$archive_mapping" "$ignore_files"
 unset password
 
-# To 'reset' in case of error, change dir to pipeline and extract database zipped archive and overwrite old files
+# To 'reset' in case of error, extract database zipped archive and overwrite old files
 # cd ~/pipeline/data-archiver/data/
 # 7za x "archiver-db-bkup_*.7z"
